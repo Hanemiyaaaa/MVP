@@ -1,0 +1,4 @@
+account_id,client_type,product_type,balance,currency,risk_flag
+1001,FL,КРЕДИТ,50000,RUB,LOW
+1002,UL,ДЕПОЗИТ,200000,USD,LOW
+1003,FL,КРЕДИТ,70000,RUB,LOW

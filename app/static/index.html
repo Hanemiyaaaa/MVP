@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Data Dashboard</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+            background: #f3f1f8;
+            color: #333;
+            overflow: auto;
+        }
+
+        header {
+            background: linear-gradient(90deg, #9f7aea, #c4b5fd);
+            color: white;
+            padding: 12px 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.55rem;
+        }
+
+        header p {
+            margin: 0;
+            font-size: 0.88rem;
+            opacity: 0.85;
+        }
+
+        main {
+            display: flex;
+            gap: 18px;
+            padding: 12px 15px;
+            box-sizing: border-box;
+        }
+
+        .panel-left {
+            width: 270px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .upload-card,
+        .filter-card {
+            background: #fdfdff;
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .upload-card h2,
+        .filter-card h2 {
+            font-size: 1.05rem;
+            margin: 0 0 6px 0;
+        }
+
+        .upload-card input,
+        .upload-card button,
+        .filter-card input,
+        .filter-card button {
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid #d8b4fe;
+            font-size: 0.85em;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .upload-card button,
+        .filter-card button {
+            background: #a78bfa;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .upload-card button:hover,
+        .filter-card button:hover {
+            background: #7c3aed;
+            transform: translateY(-1px);
+        }
+
+        .file-list {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            overflow-y: auto;
+            padding-right: 2px;
+            max-height: 500px;
+        }
+
+        .file-card {
+            background: #fdfdff;
+            border-radius: 10px;
+            padding: 6px 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.83em;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            transition: 0.2s;
+        }
+
+        .file-card:hover {
+            background: #e9d5ff;
+        }
+
+        .file-card.selected {
+            background: #c4b5fd;
+            color: white;
+        }
+
+        .file-card .file-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .file-card button {
+            background: #a78bfa;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        .file-card button:hover {
+            background: #7c3aed;
+            transform: translateY(-1px);
+        }
+
+        .panel-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .data-card,
+        .correction-card {
+            background: white;
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow: hidden;
+        }
+
+        .data-card h2,
+        .correction-card h2 {
+            margin: 0;
+            font-size: 1.05rem;
+        }
+
+        .inputs-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .inputs-row input,
+        .inputs-row select,
+        .inputs-row button {
+            flex: 1;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid #d8b4fe;
+            font-size: 0.85em;
+        }
+
+        .inputs-row button {
+            background: #a78bfa;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .inputs-row button:hover {
+            background: #7c3aed;
+            transform: translateY(-1px);
+        }
+
+        .data-table-container {
+            overflow: auto;
+            max-height: 400px;
+            position: relative;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85em;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 5px;
+            text-align: left;
+        }
+
+        .data-table thead {
+            background: #c4b5fd;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .data-table tbody tr:nth-child(odd) {
+            background: #f7f5fb;
+        }
+
+        .data-table tbody tr:hover {
+            background: #e9d5ff;
+        }
+
+        .risk-LOW {
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        .risk-MEDIUM {
+            color: #d97706;
+            font-weight: 600;
+        }
+
+        .risk-HIGH {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .correction-card input,
+        .correction-card select,
+        .correction-card button {
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid #d8b4fe;
+            font-size: 0.85em;
+            margin-bottom: 4px;
+        }
+
+        .correction-card button {
+            background: #a78bfa;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .correction-card button:hover {
+            background: #7c3aed;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Система управления данными</h1>
+        <p>Файлы, данные и корректировки в одном месте</p>
+    </header>
+
+    <main>
+        <div class="panel-left">
+
+            <div class="upload-card">
+                <h2>📤 Загрузка файла</h2>
+                <form id="uploadForm">
+                    <input type="file" name="file" required>
+                    <input type="text" name="business_date" placeholder="Бизнес-дата (YYYY-MM-DD)"
+                        title="Бизнес-дата файла" required>
+                    <input type="text" name="user_name" placeholder="Ваше имя" required>
+                    <div style="margin-top:6px;">
+                        <button type="submit">Загрузить файл</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="filter-card">
+                <h2>🔍 Фильтры файлов</h2>
+                <input type="text" id="filterUser" placeholder="Пользователь (кто загрузил)">
+                <div style="display:flex; flex-direction:column; gap:2px;">
+                    <input type="date" id="filterUploadDate">
+                    <small style="color:#555; font-size:0.75em;">Фильтр по дате загрузки</small>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:2px;">
+                    <input type="date" id="filterBusinessDate">
+                    <small style="color:#555; font-size:0.75em;">Фильтр по бизнес-дате</small>
+                </div>
+                <button onclick="applyFileFilters()">Применить фильтры</button>
+            </div>
+
+            <h2>📁 Список файлов</h2>
+            <div class="file-list" id="files"></div>
+        </div>
+
+        <div class="panel-right">
+
+            <div class="data-card">
+                <h2>📊 Данные файла</h2>
+                <div class="inputs-row">
+                    <input id="fileIdInput" placeholder="File ID">
+                    <select id="versionSelect">
+                        <option value="original">Исходная версия</option>
+                        <option value="corrected">Текущая версия</option>
+                    </select>
+                    <button onclick="startLoadData()">Показать</button>
+                    <button onclick="scrollToEnd()">⬇ В конец файла</button>
+                </div>
+
+                <div class="data-table-container" id="tableContainer">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th>Client</th>
+                                <th>Product</th>
+                                <th>Balance</th>
+                                <th>Currency</th>
+                                <th>Risk</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="correction-card">
+                <h2>⚙️ Корректировки</h2>
+                <form id="correctionForm">
+                    <input name="file_id" placeholder="File ID" required>
+                    <select name="field_to_update">
+                        <option value="risk_flag">risk_flag</option>
+                        <option value="balance">balance</option>
+                    </select>
+                    <input name="new_value" placeholder="Новое значение" required>
+                    <select name="condition_field">
+                        <option value="client_type">client_type</option>
+                        <option value="currency">currency</option>
+                        <option value="balance">balance</option>
+                    </select>
+                    <select name="operator">
+                        <option value="equals">equals</option>
+                        <option value="contains">contains</option>
+                        <option value="upper_equals">upper_equals</option>
+                    </select>
+                    <input name="condition_value" placeholder="Условие" required>
+                    <button type="submit">Создать правило</button>
+                </form>
+
+                <div style="margin-top:10px;">
+                    <input id="applyUser" placeholder="Кто применяет">
+                    <button onclick="applyCorrections()">Применить корректировки</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        let offset = 0;
+        let chunkSize = 500;
+        let loading = false;
+        let hasMore = true;
+        let currentFile = null;
+        let currentVersion = null;
+        let loadedIds = new Set();
+        let scrollHandler = null;
+
+        // 🔹 загрузка чанка
+        async function loadDataChunk(file_id, version) {
+            if (loading || !hasMore) return;
+
+            loading = true;
+
+            let res = await fetch(`/data/${file_id}/${version}?limit=${chunkSize}&offset=${offset}`);
+            let data = await res.json();
+
+            if (!data.length) {
+                hasMore = false;
+                loading = false;
+                return;
+            }
+
+            const table = document.getElementById("dataTable");
+            const fragment = document.createDocumentFragment();
+
+            data.forEach((r, index) => {
+                let uniqueKey = r.id;
+                if (loadedIds.has(uniqueKey)) return;
+
+                loadedIds.add(uniqueKey);
+
+                let tr = document.createElement("tr");
+
+                tr.innerHTML = `
+                <td>${r.account_id}</td>
+                <td>${r.client_type}</td>
+                <td>${r.product_type}</td>
+                <td>${r.balance}</td>
+                <td>${r.currency}</td>
+                <td class="risk-${r.risk_flag}">${r.risk_flag}</td>
+                `;
+                fragment.appendChild(tr);
+            });
+
+            requestAnimationFrame(() => {
+                table.appendChild(fragment);
+            });
+
+            offset += data.length;
+            loading = false;
+        }
+
+        function startLoadData() {
+            let file_id = document.getElementById("fileIdInput").value;
+            let version = document.getElementById("versionSelect").value;
+
+            if (!file_id) {
+                alert("Выбери файл");
+                return;
+            }
+
+            currentFile = file_id;
+            currentVersion = version;
+            offset = 0;
+            hasMore = true;
+            loadedIds.clear();
+
+            const table = document.getElementById("dataTable");
+            table.innerHTML = "";
+
+            const container = document.getElementById("tableContainer");
+
+            if (scrollHandler) {
+                container.removeEventListener("scroll", scrollHandler);
+            }
+
+            let ticking = false;
+
+            scrollHandler = async () => {
+                if (!ticking) {
+                    window.requestAnimationFrame(async () => {
+                        if (container.scrollTop + container.clientHeight >= container.scrollHeight - 100) {
+                            await loadDataChunk(currentFile, currentVersion);
+                        }
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            };
+
+            container.addEventListener("scroll", scrollHandler);
+
+            loadDataChunk(file_id, version);
+        }
+
+        async function scrollToEnd() {
+            if (!currentFile) {
+                alert("Сначала выбери файл");
+                return;
+            }
+
+            const container = document.getElementById("tableContainer");
+
+            let safetyCounter = 0;
+            const maxIterations = 1000;
+
+            async function loadBatch() {
+                for (let i = 0; i < 5; i++) {
+                    if (!hasMore) break;
+                    await loadDataChunk(currentFile, currentVersion);
+                }
+
+                container.scrollTop = container.scrollHeight;
+                safetyCounter++;
+
+                if (hasMore && safetyCounter < maxIterations) {
+                    setTimeout(loadBatch, 0);
+                }
+            }
+
+            loadBatch();
+        }
+
+        document.getElementById("uploadForm").onsubmit = async e => {
+            e.preventDefault();
+
+            let fd = new FormData(e.target);
+
+            await fetch("/upload", {
+                method: "POST",
+                body: fd
+            });
+
+            alert("Файл загружен");
+            loadFiles();
+        };
+
+        async function loadFiles(filters = {}) {
+            let query = new URLSearchParams(filters).toString();
+
+            let res = await fetch("/files/filter?" + query);
+            let data = await res.json();
+
+            let list = document.getElementById("files");
+            list.innerHTML = "";
+
+            data.forEach(f => {
+                let div = document.createElement("div");
+                div.classList.add("file-card");
+
+                div.innerHTML = `
+                <div class="file-info">
+                    <strong>${f.filename}</strong>
+                    <span>ID: ${f.id}</span>
+                    <span>👤 ${f.user_name}</span>
+                    <span>📅 Загрузка: ${formatDate(f.upload_date)}</span>
+                    <span>🏢 Бизнес: ${formatDate(f.business_date)}</span>
+                </div>
+                <button>Выбрать</button>`;
+
+                let btn = div.querySelector("button");
+
+                div.onclick = () => {
+                    document.querySelectorAll(".file-card")
+                        .forEach(el => el.classList.remove("selected"));
+
+                    div.classList.add("selected");
+
+                    document.getElementById("fileIdInput").value = f.id;
+
+                    btn.textContent = "Выбран ✅";
+
+                    setTimeout(() => btn.textContent = "Выбрать", 1500);
+                };
+
+                list.appendChild(div);
+            });
+        }
+
+        document.getElementById("correctionForm").onsubmit = async e => {
+            e.preventDefault();
+
+            let fd = new FormData(e.target);
+
+            let res = await fetch("/corrections", {
+                method: "POST",
+                body: fd
+            });
+
+            let result = await res.json();
+            console.log(result);
+
+            alert("Корректировка создана");
+        };
+
+        async function applyCorrections() {
+            let file_id = document.getElementById("fileIdInput").value;
+            let applied_by = document.getElementById("applyUser").value;
+
+            if (!file_id || !applied_by) {
+                alert("Укажи file_id и кто применяет");
+                return;
+            }
+
+            let fd = new FormData();
+            fd.append("applied_by", applied_by);
+
+            let res = await fetch(`/apply-corrections/${file_id}`, {
+                method: "POST",
+                body: fd
+            });
+
+            let result = await res.json();
+            console.log(result);
+
+            alert("Корректировки применены");
+
+            startLoadData();
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return "-";
+            let d = new Date(dateStr);
+            return d.toLocaleDateString("ru-RU");
+        }
+
+        function applyFileFilters() {
+            let filters = {
+                user_name: document.getElementById("filterUser").value,
+                business_date: document.getElementById("filterBusinessDate").value,
+                upload_date: document.getElementById("filterUploadDate").value
+            };
+
+            loadFiles(filters);
+        }
+
+        loadFiles();
+    </script>
+
+</body>
+
+</html>
